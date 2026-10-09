@@ -1,0 +1,37 @@
+
+services:
+  backend:
+    build:
+      context: ./backend-accessoires
+      dockerfile: Dockerfile
+    container_name: phontech-backend
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_CLIENT: sqlite
+      DATABASE_FILENAME: .tmp/data.db
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./backend-accessoires/.tmp:/opt/app/.tmp
+      - ./backend-accessoires/public/uploads:/opt/app/public/uploads
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend-vitrine
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:1337
+    container_name: phontech-frontend
+    environment:
+      NODE_ENV: production
+      STRAPI_INTERNAL_URL: http://backend:1337
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
